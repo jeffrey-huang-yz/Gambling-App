@@ -1174,36 +1174,6 @@ def get_user_profile(user_id):
     }
     return jsonify({'status': 'success', 'data': data}), 200
 
-@app.route('/api/login', methods=['POST'])
-def login_user():
-    try:
-        data = request.get_json(force=True) or {}
-        username = (data.get('username') or '').strip()
-        password = data.get('password') or ''
-
-        if not username or not password:
-            return jsonify({'status': 'error', 'message': 'username and password are required'}), 400
-
-        user = db.Users.find_one({'username': username})
-        if not user or not user.get('password'):
-            return jsonify({'status': 'error', 'message': 'invalid credentials'}), 401
-
-        if not check_password_hash(user['password'], password):
-            return jsonify({'status': 'error', 'message': 'invalid credentials'}), 401
-
-        token = generate_jwt({'sub': user['username']})
-        resp = make_response(jsonify({
-            'status': 'success',
-            'token': token,
-            'user': {
-                'user_id': user['username'],
-                'balance': user.get('balance', 0),      
-                'rank': user.get('rank', 'Bronze'),
-            }
-        }), 200)
-        return set_auth_cookie(resp, token)
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': 'Failed to login', 'error': str(e)}), 500
 
 @app.route('/api/login', methods=['POST'])
 def login_user():
